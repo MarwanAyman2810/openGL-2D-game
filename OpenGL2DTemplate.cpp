@@ -11,8 +11,8 @@ const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
 // Player properties
- int PLAYER_SIZE = 30;
- int PLAYER_STEP = 10;
+int PLAYER_SIZE = 30;
+int PLAYER_STEP = 10;
 int playerX = WINDOW_WIDTH / 2;
 int playerY = WINDOW_HEIGHT / 2;
 int playerHealth = 5; // Full health
@@ -258,12 +258,17 @@ void drawTimer() {
 
 
 void handleCollision() {
-    if (checkCollision() || playerX <= FENCE_WIDTH || playerX + PLAYER_SIZE >= WINDOW_WIDTH - FENCE_WIDTH ||
+    if (obstaclesDisappeared) { // If obstacles are disappeared, skip their collision check
+        // You can add more logic here if you want to handle other collisions during disappearance
+    }
+    else if (checkCollision() || playerX <= FENCE_WIDTH || playerX + PLAYER_SIZE >= WINDOW_WIDTH - FENCE_WIDTH ||
         playerY <= FENCE_WIDTH || playerY + PLAYER_SIZE >= WINDOW_HEIGHT - FENCE_WIDTH) {
         playerHealth--;
+
         // Reset player position
         playerX = WINDOW_WIDTH / 2;
         playerY = WINDOW_HEIGHT / 2;
+
         if (playerHealth <= 0) {
             drawGameOverScreen();
             std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -271,11 +276,12 @@ void handleCollision() {
         }
         glutSwapBuffers();
     }
-    if (checkGoalCollision())
-    {
+
+    if (checkGoalCollision()) {
         drawWinScreen();
     }
 }
+
 void initializeCollectables() {
     srand(time(0)); // Seed random number generator
     for (int i = 0; i < NUM_COLLECTABLES; i++) {
@@ -327,6 +333,15 @@ void checkCollectableCollision() {
         }
     }
 }
+void Disappeartimer(int value) {
+    updateDisappearEffect(); // Updating the disappear effect
+    glutTimerFunc(1000, Disappeartimer, 0); // Calling this function again after 1000 milliseconds
+}
+void ShrinkSpeedUptimer(int value) {
+    updateShrinkSpeedUpEffect();
+    glutTimerFunc(1000, ShrinkSpeedUptimer, 0);
+}
+
 
 
 void keyboard(unsigned char key, int x, int y) {
@@ -379,6 +394,8 @@ int main(int argc, char** argv) {
 
     glMatrixMode(GL_PROJECTION);
     gluOrtho2D(0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    glutTimerFunc(1000, Disappeartimer, 0);
+    glutTimerFunc(1000, ShrinkSpeedUptimer, 0);
     initializeCollectables();
     initializeDisappear();
     initializeShrinkSpeedUp();
